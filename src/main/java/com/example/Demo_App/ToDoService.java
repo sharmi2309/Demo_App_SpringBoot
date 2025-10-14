@@ -2,6 +2,9 @@ package com.example.Demo_App;
 
 import com.example.Demo_App.Models.ToDo;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -28,6 +31,11 @@ public class ToDoService {
     public void deletetoDo(Long id)
     {
         toDoRepository.delete(getById(id));
+    }
+    public Page<ToDo> getToDoPages(int page, int size)
+    {
+        Pageable pageable = PageRequest.of(page,size);
+        return toDoRepository.findAll(pageable);
     }
 
 }
