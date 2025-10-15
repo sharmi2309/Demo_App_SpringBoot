@@ -1,6 +1,7 @@
-package com.example.Demo_App;
+package com.example.Demo_App.Service;
 
 import com.example.Demo_App.Models.ToDo;
+import com.example.Demo_App.Repository.ToDoRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
