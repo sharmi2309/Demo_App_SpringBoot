@@ -22,10 +22,6 @@ public class User {
     Long id;
     @Email
     String email;
-    @Pattern(
-            regexp = "^[A-Za-z][A-Za-z0-9_]{4,15}$",
-            message = "Username must start with a letter, can include letters, numbers, underscores, and be 5–16 characters long"
-    )
     String password;
 
 }

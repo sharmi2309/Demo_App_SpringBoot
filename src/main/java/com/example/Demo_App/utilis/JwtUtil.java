@@ -11,7 +11,7 @@ import java.util.Date;
 
 @Component
 public class JwtUtil {
-    private final String SECRET = "ToDo Demo App";
+    private final String SECRET = "ToDo Demo App token is ready for login the application";
     private final long EXPIRATION = 1000*60;
     private final Key secretKey = Keys.hmacShaKeyFor(SECRET.getBytes(StandardCharsets.UTF_8));
 

@@ -5,31 +5,35 @@ import com.example.Demo_App.Repository.UserRepository;
 import com.example.Demo_App.Security.SecurityConfig;
 import com.example.Demo_App.Service.UserService;
 import com.example.Demo_App.utilis.JwtUtil;
+import lombok.AllArgsConstructor;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import java.util.Map;
 
 @RestController
 @RequiredArgsConstructor
+@RequestMapping("/auth")
 public class AuthController {
-    private JwtUtil jwtUtil;
-    private PasswordEncoder passwordEncoder;
-    private UserService userService;
-    private UserRepository userRepository;
+    private final JwtUtil jwtUtil;
+    private final PasswordEncoder passwordEncoder;
+    private final UserService userService;
+    private final UserRepository userRepository;
+
     @PostMapping("/register")
-    public ResponseEntity<String> registerUser(@RequestBody Map<String,String>body)
+    public ResponseEntity<String> registerUser(@RequestBody Map<String,String> body)
     {
         String email = body.get("email");
-        String password = body.get("password");
+        String password = passwordEncoder.encode(body.get("password"));
         if(userRepository.findByEmail(email).isPresent())
         {
-            return  new ResponseEntity<>("Email already Exists",HttpStatus.CONFLICT);
+            return new ResponseEntity<>("Email already Exists",HttpStatus.CONFLICT);
         }
         userService.createUser(User.builder().email(email).password(password).build());
         return new ResponseEntity<>("Email is Registered Successfully !!",HttpStatus.OK);
