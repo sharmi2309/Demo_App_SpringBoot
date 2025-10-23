@@ -2,12 +2,20 @@ package com.example.Demo_App.Service;
 
 import com.example.Demo_App.Models.ToDo;
 import com.example.Demo_App.Repository.ToDoRepository;
+import jakarta.persistence.EntityManager;
+import jakarta.persistence.PersistenceContext;
+import jakarta.persistence.TypedQuery;
+import jakarta.persistence.criteria.CriteriaBuilder;
+import jakarta.persistence.criteria.CriteriaQuery;
+import jakarta.persistence.criteria.Predicate;
+import jakarta.persistence.criteria.Root;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
+import java.util.ArrayList;
 import java.util.List;
 
 @Service
@@ -37,6 +45,10 @@ public class ToDoService {
     {
         Pageable pageable = PageRequest.of(page,size);
         return toDoRepository.findAll(pageable);
+    }
+
+    public List<ToDo> searchToDos(String title, Boolean isCompleted) {
+        return toDoRepository.searchToDos(title, isCompleted);
     }
 
 }

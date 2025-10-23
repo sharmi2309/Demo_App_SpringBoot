@@ -102,4 +102,10 @@ public class ToDoController {
     {
         toDoService.deletetoDo(id);
     }
+    @GetMapping("/search")
+    public List<ToDo> searchToDos(
+            @RequestParam(required = false) String title,
+            @RequestParam(required = false) Boolean isCompleted) {
+        return toDoService.searchToDos(title, isCompleted);
+    }
 }
