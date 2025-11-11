@@ -15,7 +15,7 @@ import jakarta.validation.constraints.NotNull;
 @Data
 public class ToDo {
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @GeneratedValue
     Long id;
     @NotNull(message = "Title cannot be null")
     @NotBlank(message = "Title cannot be blank")

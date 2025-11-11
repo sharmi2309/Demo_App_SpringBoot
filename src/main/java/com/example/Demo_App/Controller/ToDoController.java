@@ -98,9 +98,10 @@ public class ToDoController {
 
     }
     @DeleteMapping("/{id}")
-    void deleteToDoById(@PathVariable Long id)
+    public ResponseEntity<String> deleteToDoById(@PathVariable Long id)
     {
         toDoService.deletetoDo(id);
+        return ResponseEntity.ok("Deleted Successfully !!");
     }
     @GetMapping("/search")
     public List<ToDo> searchToDos(

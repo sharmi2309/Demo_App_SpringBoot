@@ -10,16 +10,14 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.crypto.password.PasswordEncoder;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import java.util.Map;
 
 @RestController
 @RequiredArgsConstructor
 @RequestMapping("/auth")
+@CrossOrigin("http://localhost:4200")
 public class AuthController {
     private final JwtUtil jwtUtil;
     private final PasswordEncoder passwordEncoder;
@@ -46,7 +44,7 @@ public class AuthController {
         String password = body.get("password");
         if(userRepository.findByEmail(email).isEmpty())
         {
-            return new ResponseEntity<>("User is not Registered",HttpStatus.UNAUTHORIZED);
+            return new ResponseEntity<>("User is not Registered",HttpStatus.NOT_FOUND);
         }
         User user = userRepository.findByEmail(email).get();
         if (!passwordEncoder.matches(password, user.getPassword()))
