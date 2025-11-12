@@ -1,10 +1,12 @@
 package com.example.Demo_App.Controller;
 
 import com.example.Demo_App.Models.User;
+import com.example.Demo_App.Models.dto.UserDTO;
 import com.example.Demo_App.Repository.UserRepository;
 import com.example.Demo_App.Security.SecurityConfig;
 import com.example.Demo_App.Service.UserService;
 import com.example.Demo_App.utilis.JwtUtil;
+import jakarta.validation.Valid;
 import lombok.AllArgsConstructor;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
@@ -25,16 +27,23 @@ public class AuthController {
     private final UserRepository userRepository;
 
     @PostMapping("/register")
-    public ResponseEntity<String> registerUser(@RequestBody Map<String,String> body)
+    public ResponseEntity<?> registerUser(@Valid @RequestBody UserDTO userDTO)
     {
-        String email = body.get("email");
-        String password = passwordEncoder.encode(body.get("password"));
-        if(userRepository.findByEmail(email).isPresent())
-        {
-            return new ResponseEntity<>("Email already Exists",HttpStatus.CONFLICT);
+        String email = userDTO.getEmail();
+        String password = userDTO.getPassword();
+
+        if (userRepository.findByEmail(email).isPresent()) {
+            return ResponseEntity
+                    .status(HttpStatus.CONFLICT)
+                    .body(Map.of("error_message", "Email already exists"));
         }
-        userService.createUser(User.builder().email(email).password(password).build());
-        return new ResponseEntity<>("Email is Registered Successfully !!",HttpStatus.OK);
+
+        userService.createUser(User.builder()
+                .email(email)
+                .password(passwordEncoder.encode(password))
+                .build());
+
+        return ResponseEntity.ok(Map.of("message", "Email is registered successfully!"));
 
     }
     @PostMapping("/login")
@@ -44,12 +53,16 @@ public class AuthController {
         String password = body.get("password");
         if(userRepository.findByEmail(email).isEmpty())
         {
-            return new ResponseEntity<>("User is not Registered",HttpStatus.NOT_FOUND);
+            return ResponseEntity
+                    .status(HttpStatus.NOT_FOUND)
+                    .body(Map.of("error_message", "User is not registered"));
         }
         User user = userRepository.findByEmail(email).get();
         if (!passwordEncoder.matches(password, user.getPassword()))
         {
-            return new ResponseEntity<>("Invalid User",HttpStatus.UNAUTHORIZED);
+            return ResponseEntity
+                    .status(HttpStatus.UNAUTHORIZED)
+                    .body(Map.of("error_message", "Invalid user credentials"));
         }
         String token = jwtUtil.generateToken(email);
         return ResponseEntity.ok(Map.of("token",token));

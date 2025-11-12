@@ -17,6 +17,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+@CrossOrigin("http://localhost:4200")
 @RestController
 @RequestMapping("api/todo")
 @Slf4j
@@ -31,7 +32,7 @@ public class ToDoController {
             if(getallTodo.size() == 0 )
             {
                 Map<String,String>response = new HashMap<>();
-                response.put("message","No Records Found");
+                response.put("error_message","No ToDo records found.");
                 return new ResponseEntity<>(response, HttpStatus.NOT_FOUND);
             }
             return new ResponseEntity<>(getallTodo,HttpStatus.OK);
@@ -40,7 +41,7 @@ public class ToDoController {
         {
             log.info("Error");
             Map<String,String>response = new HashMap<>();
-            response.put("message","Error Found");
+            response.put("error_message","An error occurred while retrieving ToDos.");
             return new ResponseEntity<>(response, HttpStatus.NOT_FOUND);
         }
 
@@ -58,7 +59,7 @@ public class ToDoController {
             if(getTodo.getId() == null)
             {
                 Map<String,String>response = new HashMap<>();
-                response.put("message","No Records Found");
+                response.put("error_message","ToDo not found for the given ID.");
                 return new ResponseEntity<>(response, HttpStatus.NOT_FOUND);
             }
             return new ResponseEntity<>(getTodo, HttpStatus.OK);
@@ -67,46 +68,97 @@ public class ToDoController {
         {
             log.warn("Warning Mesaage");
             Map<String,String>response = new HashMap<>();
-            response.put("message","Error Found");
+            response.put("error_message","An internal error occurred while fetching the ToDo.");
             return new ResponseEntity<>(response, HttpStatus.NOT_FOUND);
         }
     }
     @GetMapping
-    ResponseEntity <?> getToDoPages(@RequestParam int page , @RequestParam int size)
-    {
+    public ResponseEntity<?> getToDoPages(@RequestParam int page, @RequestParam int size) {
         try {
-            Page<ToDo> getTodo = toDoService.getToDoPages(page, size);
-            return new ResponseEntity<>(getTodo, HttpStatus.OK);
-        }
-        catch (RuntimeException e)
-        {
-            Map<String,String>response = new HashMap<>();
-            response.put("message","Data not Found");
-            return new ResponseEntity<>(response, HttpStatus.NOT_FOUND);
+            Page<ToDo> todos = toDoService.getToDoPages(page, size);
+
+            if (todos.isEmpty()) {
+                return ResponseEntity
+                        .status(HttpStatus.NOT_FOUND)
+                        .body(Map.of("error_message", "No ToDo records found for the given page."));
+            }
+
+            return ResponseEntity.ok(todos);
+
+        } catch (RuntimeException e) {
+            log.error("Error fetching paginated ToDos", e);
+            return ResponseEntity
+                    .status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body(Map.of("error_message", "Failed to fetch ToDo data."));
         }
     }
+
     //Request Body
     @PostMapping("/create")
     ResponseEntity<?> createTodo(@Valid @RequestBody ToDo toDo)
     {
-        return new ResponseEntity<>(toDoService.createToDo(toDo), HttpStatus.CREATED);
+        try {
+            ToDo created = toDoService.createToDo(toDo);
+            return ResponseEntity
+                    .status(HttpStatus.CREATED)
+                    .body(Map.of("message", "ToDo created successfully!", "data", created));
+
+        } catch (RuntimeException e) {
+            log.error("Error creating ToDo", e);
+            return ResponseEntity
+                    .status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body(Map.of("error_message", "Failed to create ToDo."));
+        }
     }
     @PutMapping
-    ResponseEntity<ToDo>updateTodo(@RequestBody ToDo toDo)
+    ResponseEntity<?>updateTodo(@RequestBody ToDo toDo)
     {
-        return new ResponseEntity<>(toDoService.updateToDo(toDo),HttpStatus.OK);
+        try {
+            ToDo updated = toDoService.updateToDo(toDo);
+            return ResponseEntity
+                    .ok(Map.of("message", "ToDo updated successfully!", "data", updated));
+
+        } catch (RuntimeException e) {
+            log.error("Error updating ToDo", e);
+            return ResponseEntity
+                    .status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body(Map.of("error_message", "Failed to update ToDo."));
+        }
 
     }
     @DeleteMapping("/{id}")
-    public ResponseEntity<String> deleteToDoById(@PathVariable Long id)
+    public ResponseEntity<?> deleteToDoById(@PathVariable Long id)
     {
-        toDoService.deletetoDo(id);
-        return ResponseEntity.ok("Deleted Successfully !!");
+        try {
+            toDoService.deletetoDo(id);
+            return ResponseEntity.ok(Map.of("message", "ToDo deleted successfully!"));
+        } catch (RuntimeException e) {
+            log.error("Error deleting ToDo with ID: {}", id, e);
+            return ResponseEntity
+                    .status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body(Map.of("error_message", "Failed to delete ToDo."));
+        }
     }
     @GetMapping("/search")
-    public List<ToDo> searchToDos(
+    public ResponseEntity<?> searchToDos(
             @RequestParam(required = false) String title,
             @RequestParam(required = false) Boolean isCompleted) {
-        return toDoService.searchToDos(title, isCompleted);
+        try {
+            List<ToDo> results = toDoService.searchToDos(title, isCompleted);
+
+            if (results.isEmpty()) {
+                return ResponseEntity
+                        .status(HttpStatus.NOT_FOUND)
+                        .body(Map.of("error_message", "No matching ToDo records found."));
+            }
+
+            return ResponseEntity.ok(results);
+
+        } catch (RuntimeException e) {
+            log.error("Error searching ToDos", e);
+            return ResponseEntity
+                    .status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body(Map.of("error_message", "Error occurred during ToDo search."));
+        }
     }
 }
