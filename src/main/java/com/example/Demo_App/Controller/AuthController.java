@@ -5,6 +5,7 @@ import com.example.Demo_App.Models.dto.UserDTO;
 import com.example.Demo_App.Repository.UserRepository;
 import com.example.Demo_App.Security.SecurityConfig;
 import com.example.Demo_App.Service.UserService;
+import com.example.Demo_App.Validation.ValidationUtil;
 import com.example.Demo_App.utilis.JwtUtil;
 import jakarta.validation.Valid;
 import lombok.AllArgsConstructor;
@@ -27,10 +28,14 @@ public class AuthController {
     private final UserRepository userRepository;
 
     @PostMapping("/register")
-    public ResponseEntity<?> registerUser(@Valid @RequestBody UserDTO userDTO)
+    public ResponseEntity<?> registerUser(@RequestBody Map<String,String> body)
     {
-        String email = userDTO.getEmail();
-        String password = userDTO.getPassword();
+        String email = body.get("email");
+        String password = body.get("password");
+        ResponseEntity<Map<String, String>> validationResponse = ValidationUtil.validateCredentials(email, password);
+        if (validationResponse != null) {
+            return validationResponse;
+        }
 
         if (userRepository.findByEmail(email).isPresent()) {
             return ResponseEntity
@@ -51,6 +56,10 @@ public class AuthController {
     {
         String email = body.get("email");
         String password = body.get("password");
+        ResponseEntity<Map<String, String>> validationResponse = ValidationUtil.validateCredentials(email, password);
+        if (validationResponse != null) {
+            return validationResponse;
+        }
         if(userRepository.findByEmail(email).isEmpty())
         {
             return ResponseEntity
